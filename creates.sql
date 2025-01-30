@@ -1,23 +1,6 @@
 
 ---structure phase
 
-drop table subscribed_to;
-drop table member_of;
-drop table admins;
-drop table Ban;
-drop table has_pv;
-drop table shared_media;
-drop table invite_link;
-drop table booster;
-drop table advertisement;
-drop table channel;
-drop table "Group";
-drop table groups;
-drop table public_conversation;
-drop table user_conversations;
-drop table private_chat;
-
-
 
 CREATE TABLE Conversation (
                               conv_id UUID PRIMARY KEY DEFAULT gen_random_uuid()
