@@ -50,3 +50,13 @@ SELECT user_id, '1234567890', 'John', 'Doe' FROM new_user
 UNION ALL
 SELECT user_id, '1234567890', 'John', 'Doe' FROM Users WHERE username = 'JohnD'
 LIMIT 1;
+
+
+CREATE TABLE Contact (
+                         user_id UUID NOT NULL REFERENCES Human_user(user_id),
+                         c_user_id UUID NOT NULL REFERENCES Human_user(user_id),
+                         first_name STRING(10) NOT NULL,
+                         last_name STRING(10) DEFAULT '',
+                         PRIMARY KEY (user_id, c_user_id)
+);
+
