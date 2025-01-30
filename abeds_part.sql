@@ -12,10 +12,10 @@ drop table booster;
 drop table advertisement;
 drop table channel;
 drop table "Group";
+drop table groups;
 drop table public_conversation;
 drop table user_conversations;
 drop table private_chat;
-drop table conversation;
 
 
 
@@ -47,7 +47,7 @@ CREATE TABLE Public_Conversation (
 );
 
 
-CREATE TABLE "Group" (
+CREATE TABLE groups (
     conv_id UUID PRIMARY KEY REFERENCES Public_Conversation(conv_id) ON DELETE CASCADE,
     is_history_hidden BOOLEAN NOT NULL DEFAULT FALSE
 );
@@ -55,7 +55,7 @@ CREATE TABLE "Group" (
 CREATE TABLE Channel (
     conv_id UUID PRIMARY KEY REFERENCES Public_Conversation(conv_id) ON DELETE CASCADE,
     sign_message BOOLEAN NOT NULL DEFAULT FALSE,
-    discussion UUID UNIQUE REFERENCES "Group"(conv_id) ON DELETE SET NULL
+    discussion UUID UNIQUE REFERENCES groups(conv_id) ON DELETE SET NULL
 );
 
 CREATE TABLE Advertisement (
@@ -111,7 +111,7 @@ CREATE TABLE Admins (
 
 CREATE TABLE Member_of (
     user_id UUID REFERENCES Users(user_id) ON DELETE CASCADE,
-    conv_id UUID REFERENCES "Group"(conv_id) ON DELETE CASCADE,
+    conv_id UUID REFERENCES groups(conv_id) ON DELETE CASCADE,
     nickname STRING(10),
     membership_date TIMESTAMP DEFAULT now(),
     group_permission STRING(24) DEFAULT '111111111111100000000000',
