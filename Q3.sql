@@ -4,8 +4,8 @@ FROM groups g
          JOIN Member_of m ON g.conv_id = m.conv_id
          JOIN Message msg ON c.conv_id = msg.conv_id
 GROUP BY c.title
-HAVING COUNT(m.user_id) > 5;
-
+HAVING COUNT(DISTINCT m.user_id) > 2
+ORDER BY message_count DESC;
 
 
 
@@ -62,4 +62,5 @@ values ('00fb9bb7-0c85-409d-b7b5-f13c783be03d',
 --           join (select member_of.conv_id, count(*) as num from member_of) on pc.conv_id = member_of.conv_id
 --  GROUP BY
 
-select count(*) from message;
+select count(*)
+from message;
