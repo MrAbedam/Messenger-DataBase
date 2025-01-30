@@ -124,3 +124,16 @@ CREATE TABLE Session (
 );
 
 
+CREATE TABLE Sticker_Pack (
+                              sticker_pack_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                              name STRING(10) NOT NULL,
+                              url STRING UNIQUE ,
+                              user_id UUID NOT NULL REFERENCES Users(user_id)
+);
+
+CREATE TABLE Sticker (
+                         sticker_id UUID PRIMARY KEY,
+                         emoji STRING(10),
+                         media_id UUID UNIQUE NOT NULL REFERENCES Media(media_id),
+                         sticker_pack_id UUID UNIQUE REFERENCES Sticker_Pack(sticker_pack_id)
+);
