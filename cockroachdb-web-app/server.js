@@ -173,7 +173,7 @@ app.get('/messages', async (req, res) => {
         FROM Message m
                  LEFT JOIN Normal_Message nm ON m.message_id = nm.message_id
                  LEFT JOIN Poll_Message pm ON m.message_id = pm.message_id
-        WHERE m.conv_id = $1;
+        WHERE m.conv_id = $1 ORDER BY m.send_time ASC;
     `;
     const result = await client.query(query, [convId]);
     res.json(result.rows);
