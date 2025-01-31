@@ -18,6 +18,18 @@ Some Query for getting data in Query directory
 
 [Queries](./Query)
 
+### Run load test app
+
+in our scenario we add random fake human user
+with python code
+[Load-tester](./Load%20test/load_test.py)
+
+```
+python load_test.py 
+```
+
+you can see result of what data added in web-app
+
 ### Run nodejs web app
 
 <ul>
