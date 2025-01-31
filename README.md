@@ -6,9 +6,9 @@
 --------
 Find all Er models in ER Models directories
 
-[PDF](./ER%20Models/Phase1%20DB.drawio.pdf)
+[PDF](./ER%20Models/Phase2%20DB.drawio.pdf)
 
-[Drawio](./ER%20Models/Phase1%20DB.drawio)
+[Drawio](./ER%20Models/Phase2%20DB.drawio.xml)
 
 ALL CRUD Query in creates.sql
 
