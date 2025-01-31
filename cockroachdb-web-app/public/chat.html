@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+        .conversation {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+        }
+        .conversation:hover {
+            background-color: #ddd;
+        }
+        .chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .input-area {
+            display: flex;
+            padding: 10px;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .input-area button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .input-area button:hover {
+            background-color: #0056b3;
+        }
+        .user-id-input {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .user-id-input input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: calc(100% - 22px);
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar" id="sidebar">
+    <div class="user-id-input">
+        <input type="text" id="userIdInput" placeholder="Enter your User ID">
+        <button onclick="setUserId()">Set User ID</button>
+    </div>
+    <button onclick="createNewConversation()" style="width: 100%; margin-top: 10px;">New Conversation</button>
+    <!-- Conversations will be dynamically populated here -->
+</div>
+<div class="chat">
+    <div class="messages" id="messages">
+        <!-- Messages will be dynamically populated here -->
+    </div>
+    <div class="input-area">
+        <input type="text" id="messageInput" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    let userId = null; // User ID will be set by the user
+    let currentConvId = null;
+
+    // Set the user ID
+    function setUserId() {
+        const input = document.getElementById('userIdInput');
+        userId = input.value.trim();
+        if (userId) {
+            fetchConversations();
+        } else {
+            alert('Please enter a valid User ID.');
+        }
+    }
+
+    // Fetch conversations for the user
+    async function fetchConversations() {
+        if (!userId) return;
+
+        const response = await fetch(`/conversations?user_id=${userId}`);
+        const conversations = await response.json();
+        const sidebar = document.getElementById('sidebar');
+        sidebar.innerHTML = `
+                <div class="user-id-input">
+                    <input type="text" id="userIdInput" placeholder="Enter your User ID" value="${userId}">
+                    <button onclick="setUserId()">Set User ID</button>
+                </div>
+                <button onclick="createNewConversation()" style="width: 100%; margin-top: 10px;">New Conversation</button>
+                ${conversations.map(conv => `
+                    <div class="conversation" data-conv-id="${conv.conv_id}" onclick="selectConversation('${conv.conv_id}')">
+                        ${conv.title || 'Untitled Conversation'}
+                    </div>
+                `).join('')}
+            `;
+    }
+
+    // Fetch messages for the selected conversation
+    async function fetchMessages(convId) {
+        const response = await fetch(`/messages?conv_id=${convId}`);
+        const messages = await response.json();
+        const messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML = messages.map(msg => `
+                <div class="message">
+                    <strong>${msg.sender_id}:</strong> ${msg.text || msg.question || 'Sticker'}
+                </div>
+            `).join('');
+    }
+
+    // Select a conversation
+    function selectConversation(convId) {
+        currentConvId = convId;
+        fetchMessages(convId);
+    }
+
+    // Create a new conversation
+    async function createNewConversation() {
+        if (!userId) {
+            alert('Please set your User ID first.');
+            return;
+        }
+
+        const response = await fetch('/createConversation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                title: 'AAA'
+            })
+        });
+
+        if (response.ok) {
+            fetchConversations(); // Refresh the conversation list
+        } else {
+            alert('Failed to create a new conversation.');
+        }
+    }
+
+    // Send a new message
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
+        if (!text || !currentConvId || !userId) return;
+
+        const response = await fetch('/sendMessage', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sender_id: userId,
+                conv_id: currentConvId,
+                text: text
+            })
+        });
+
+        if (response.ok) {
+            input.value = '';
+            fetchMessages(currentConvId); // Refresh messages
+        } else {
+            alert('Failed to send message.');
+        }
+    }
+</script>
+</body>
+</html>
