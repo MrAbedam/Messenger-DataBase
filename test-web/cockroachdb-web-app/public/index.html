@@ -1,154 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CockroachDB Web App</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
-      h1 {
-        color: #333;
-      }
-      a {
-        display: block;
-        margin: 10px 0;
-        color: #007bff;
-        text-decoration: none;
-      }
-      a:hover {
-        text-decoration: underline;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-      }
-      th,
-      td {
-        padding: 10px;
-        border: 1px solid #ddd;
-        text-align: left;
-      }
-      th {
-        background-color: #f4f4f4;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>CockroachDB Tables</h1>
-    <div id="table-links">
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CockroachDB Web App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    a {
+      display: block;
+      margin: 10px 0;
+      color: #007bff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th,
+    td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .input-form {
+      margin-top: 20px;
+    }
+    .input-form input {
+      margin: 5px;
+      padding: 8px;
+      width: 200px;
+    }
+    .input-form button {
+      padding: 8px 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .input-form button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+<h1>CockroachDB Tables</h1>
+<div id="table-links"></div>
 
-    <h2>Table Data</h2>
-    <table id="data-table">
-      <thead>
-        <tr>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
+<h2>Table Data</h2>
+<table id="data-table">
+  <thead>
+  <tr></tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-    <script>
-      const tables = [
-        "Conversation",
-        "Channel",
-        "Private_Chat",
-        "Public_Conversation",
-        "Shared_Media",
-        "User_Conversations",
-        "Booster",
-        "Has_PV",
-        "Ban",
-        "Advertisement",
-        "Invite_Link",
-        "Groups",
-        "Member_Of",
-        "Admins",
-        "Subscribed_To",
-        "Users",
-        "Human_user",
-        "Contact",
-        "Premium",
-        "Private_Prof",
-        "Block_user",
-        "Chosen_Privacy",
-        "Bot",
-        "Bot_Commands",
-        "Story",
-        "Send_Slicker",
-        "Has_Slicker_Pack",
-        "Session",
-        "Message",
-        "Payment",
-        "Normal_Message",
-        "Sticker_Pack",
-        "Message_Sticker",
-        "Poll_Message",
-        "Vote",
-        "Poll_Option",
-        "Card",
-        "Call",
-        "Sticker",
-        "Reacts",
-        "Media",
-      ];
+<div class="input-form" id="input-form">
+  <h2>Add Data</h2>
+  <form id="data-form"></form>
+</div>
 
-      function createTableLinks() {
-        const tableLinksDiv = document.getElementById("table-links");
-        tables.forEach((table) => {
-          const link = document.createElement("a");
-          link.href = "#";
-          link.textContent = table;
-          link.addEventListener("click", () => fetchTableData(table));
-          tableLinksDiv.appendChild(link);
+<script>
+  const tables = [
+    "Conversation",
+    "Channel",
+    "Private_Chat",
+    "Public_Conversation",
+    "Shared_Media",
+    "User_Conversations",
+    "Booster",
+    "Has_PV",
+    "Ban",
+    "Advertisement",
+    "Invite_Link",
+    "Groups",
+    "Member_Of",
+    "Admins",
+    "Subscribed_To",
+    "Users",
+    "Human_user",
+    "Contact",
+    "Premium",
+    "Private_Prof",
+    "Block_user",
+    "Chosen_Privacy",
+    "Bot",
+    "Bot_Commands",
+    "Story",
+    "Send_Slicker",
+    "Has_Slicker_Pack",
+    "Session",
+    "Message",
+    "Payment",
+    "Normal_Message",
+    "Sticker_Pack",
+    "Message_Sticker",
+    "Poll_Message",
+    "Vote",
+    "Poll_Option",
+    "Card",
+    "Call",
+    "Sticker",
+    "Reacts",
+    "Media",
+  ];
+
+  let currentTable = null;
+
+  // Create table links
+  function createTableLinks() {
+    const tableLinksDiv = document.getElementById("table-links");
+    tables.forEach((table) => {
+      const link = document.createElement("a");
+      link.href = "#";
+      link.textContent = table;
+      link.addEventListener("click", () => fetchTableData(table));
+      tableLinksDiv.appendChild(link);
+    });
+  }
+
+  // Fetch table data
+  async function fetchTableData(tableName) {
+    try {
+      const response = await fetch(`http://localhost:3000/table/${tableName}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+
+      // Display table data
+      const table = document.getElementById("data-table");
+      table.innerHTML = "";
+
+      if (data.length > 0) {
+        const headers = Object.keys(data[0]);
+        const headerRow = document.createElement("tr");
+        headers.forEach((header) => {
+          const th = document.createElement("th");
+          th.textContent = header;
+          headerRow.appendChild(th);
         });
+        table.appendChild(headerRow);
+
+        data.forEach((row) => {
+          const tr = document.createElement("tr");
+          headers.forEach((header) => {
+            const td = document.createElement("td");
+            td.textContent = row[header];
+            tr.appendChild(td);
+          });
+          table.appendChild(tr);
+        });
+      } else {
+        table.innerHTML = "<tr><td>No data found</td></tr>";
       }
 
-      async function fetchTableData(tableName) {
-  try {
-    const response = await fetch(`http://localhost:3000/table/${tableName}`);
+      // Set current table
+      currentTable = tableName;
 
+      // Generate input form for adding data
+      generateInputForm(tableName);
+    } catch (error) {
+      console.error("Error fetching table data:", error);
+      alert(`Error fetching table data: ${error.message}`);
+    }
+  }
+
+  // Generate input form for adding data
+  async function generateInputForm(tableName) {
+    const form = document.getElementById("data-form");
+    form.innerHTML = "";
+
+    // Fetch table schema
+    const response = await fetch(`http://localhost:3000/tableSchema/${tableName}`);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
+    const schema = await response.json();
 
-    const data = await response.json();
+    // Create input fields for each column
+    schema.forEach((column) => {
+      const label = document.createElement("label");
+      label.textContent = column.column_name;
+      label.style.display = "block";
+      form.appendChild(label);
 
-    const table = document.getElementById("data-table");
-    table.innerHTML = "";
+      const input = document.createElement("input");
+      input.type = "text";
+      input.name = column.column_name;
+      input.placeholder = column.column_name;
+      form.appendChild(input);
+    });
 
-    if (data.length > 0) {
-      const headers = Object.keys(data[0]);
-      const headerRow = document.createElement("tr");
-      headers.forEach((header) => {
-        const th = document.createElement("th");
-        th.textContent = header;
-        headerRow.appendChild(th);
-      });
-      table.appendChild(headerRow);
-
-      data.forEach((row) => {
-        const tr = document.createElement("tr");
-        headers.forEach((header) => {
-          const td = document.createElement("td");
-          td.textContent = row[header];
-          tr.appendChild(td);
-        });
-        table.appendChild(tr);
-      });
-    } else {
-      table.innerHTML = "<tr><td>No data found</td></tr>";
-    }
-  } catch (error) {
-    console.error("Error fetching table data:", error);
-    alert(`Error fetching table data: ${error.message}`);
+    // Add submit button
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Add Data";
+    button.addEventListener("click", () => addData(tableName));
+    form.appendChild(button);
   }
-}
-      createTableLinks();
-    </script>
-  </body>
+
+  // Add data to the table
+  async function addData(tableName) {
+    const form = document.getElementById("data-form");
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
+
+    try {
+      const response = await fetch(`http://localhost:3000/addData/${tableName}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      alert("Data added successfully!");
+      fetchTableData(tableName); // Refresh table data
+    } catch (error) {
+      console.error("Error adding data:", error);
+      alert(`Error adding data: ${error.message}`);
+    }
+  }
+
+  // Initialize the page
+  createTableLinks();
+</script>
+</body>
 </html>

@@ -37,6 +37,7 @@ client
 app.use(express.static("public"));
 
 
+// Fetch table data
 app.get("/table/:tableName", async (req, res) => {
   const tableName = req.params.tableName;
 
@@ -44,6 +45,43 @@ app.get("/table/:tableName", async (req, res) => {
     const result = await client.query(`SELECT * FROM ${tableName}`);
     res.json(result.rows);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Fetch table schema
+app.get("/tableSchema/:tableName", async (req, res) => {
+  const tableName = req.params.tableName;
+
+  try {
+    const result = await client.query(
+        `SELECT column_name FROM information_schema.columns WHERE table_name = $1`,
+        [tableName]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Add data to a table
+app.post("/addData/:tableName", async (req, res) => {
+  const tableName = req.params.tableName;
+  const data = req.body;
+
+  try {
+    const columns = Object.keys(data).join(", ");
+    const values = Object.values(data)
+        .map((value) => `'${value}'`)
+        .join(", ");
+    const query = `INSERT INTO ${tableName} (${columns}) VALUES (${values})`;
+
+    console.log("Executing query:", query); // Log the query for debugging
+
+    await client.query(query);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("Error executing query:", err); // Log the full error
     res.status(500).json({ error: err.message });
   }
 });
